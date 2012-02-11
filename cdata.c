@@ -26,13 +26,18 @@ static struct file_operations cdata_fops = {
 
 int cdata_init_module(void)
 {
+  register_chrdev(121, "cdata", &cdata_fops);
+  
 }
 
 void cdata_cleanup_module(void)
 {
+
+
 }
 
 module_init(cdata_init_module);
 module_exit(cdata_cleanup_module);
 
 MODULE_LICENSE("GPL");
+
