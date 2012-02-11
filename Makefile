@@ -11,4 +11,4 @@ default:
 	$(MAKE) -C $(KERNEL_DIR) SUBDIRS=$(PWD) modules
 
 clean:
-	rm -rf *.o *.ko .*cmd modules.* Module.* .tmp_versions *.mod.c
+	rm -rf *.o *.ko .*cmd modules.* Module.* .tmp_versions *.mod.c *.out
