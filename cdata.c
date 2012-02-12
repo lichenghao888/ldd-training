@@ -36,6 +36,13 @@ loff_t *off)
 ssize_t cdata_write(struct file *filp, const char *buf, size_t size,
 loff_t *off)
 {
+    int i=0;
+
+    for (i=0; i<5000; i++)
+     {
+         ;
+         //schedule();
+     }
     return 0;
 }
 
