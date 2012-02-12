@@ -27,13 +27,13 @@ static int cdata_open(struct inode *inode, struct file *filp)
     return 0;
 }
 
-ssize_t cdata_read(struct file *filp, const char *buf, size_t size,
+static ssize_t cdata_read(struct file *filp, const char *buf, size_t size,
 loff_t *off)
 {
 
 }
 
-ssize_t cdata_write(struct file *filp, const char *buf, size_t size,
+static ssize_t cdata_write(struct file *filp, const char *buf, size_t size,
 loff_t *off)
 {
     int i=0;
@@ -46,17 +46,17 @@ loff_t *off)
     return 0;
 }
 
-int cdata_close(struct inode *inode, struct file *filp)
+static int cdata_close(struct inode *inode, struct file *filp)
 {
     return 0;
 }
 
-int cdata_flush(struct file *filp)
+static int cdata_flush(struct file *filp)
 {
     printk(KERN_INFO "Flush\n");
 }
 
-int cdata_ioctl(struct inode *inode, struct file *filp, unsigned int cmd, unsigned long arg)
+static int cdata_ioctl(struct inode *inode, struct file *filp, unsigned int cmd, unsigned long arg)
 {
 
 }
@@ -71,7 +71,7 @@ static struct file_operations cdata_fops = {
     flush: cdata_flush,
 };
 
-int cdata_init_module(void)
+static int cdata_init_module(void)
 {
     if (register_chrdev(121, "cdata", &cdata_fops) < 0) {
         printk(KERN_INFO "CDATA: can't register driver\n");
@@ -80,7 +80,7 @@ int cdata_init_module(void)
     return 0;
 }
 
-void cdata_cleanup_module(void)
+static void cdata_cleanup_module(void)
 {
     unregister_chrdev(121, "cdata");
 }

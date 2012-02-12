@@ -8,7 +8,7 @@ void main()
 {
     int fd;
     fd = open("/dev/cdata4", O_RDWR);
-    sleep(10);
+    write(fd, "123");
 
     close(fd);
 }
