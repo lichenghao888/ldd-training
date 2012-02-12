@@ -7,6 +7,9 @@
 void main()
 {
    int fd;
-    fd = open("/dev/cdata", O_RDWR);
+    fd = open("/dev/cdata4", O_RDWR);
+    fd = open("/dev/cdata4", O_RDWR);
+sleep(10);
+close(fd);
 close(fd);
 }

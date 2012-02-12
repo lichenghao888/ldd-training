@@ -44,6 +44,11 @@ int cdata_close(struct inode *inode, struct file *filp)
     return 0;
 }
 
+int cdata_flush(struct file *filp)
+{
+    printk(KERN_INFO "Flush\n");
+}
+
 int cdata_ioctl(struct inode *inode, struct file *filp, unsigned int cmd, unsigned long arg)
 {
 
@@ -56,6 +61,7 @@ static struct file_operations cdata_fops = {
     read: cdata_read,    
     write: cdata_write,
     ioctl: cdata_ioctl,
+    flush: cdata_flush,
 };
 
 int cdata_init_module(void)
