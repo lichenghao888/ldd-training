@@ -17,14 +17,20 @@
 
 static int cdata_open(struct inode *inode, struct file *filp)
 {
+    int minor;
+
     printk(KERN_INFO "CDATA: in open\n");
+
+    minor = MINOR(inode->i_rdev);
+    printk(KERN_INFO "CDATA Minor no = : %d\n", minor);
+
     return 0;
 }
 
 ssize_t cdata_read(struct file *filp, const char *buf, size_t size,
 loff_t *off)
 {
-    return 0;
+
 }
 
 ssize_t cdata_write(struct file *filp, const char *buf, size_t size,
