@@ -17,15 +17,29 @@
 
 #include "cdata_ioctl.h"
 
+
+//unsigned long *fb;   //直接這樣寫也不對會有re-entrance, 所以要用filp->private_data
+//改成下面這個struct來實做
+struct cdata_t {
+   unsigned long *fb;
+}
+
 static int cdata_open(struct inode *inode, struct file *filp)
 {
     int minor, major;
+    struct cdata_t *cdata;
+
 
     printk(KERN_INFO "CDATA: in open\n");
 
     minor = MINOR(inode->i_rdev);
     major = MAJOR(inode->i_rdev);
     printk(KERN_INFO "CDATA Major no: %d & Minor no: %d\n", major, minor);
+
+    cdata = (cdata_t *)kmalloc(sizeof(struct cdata_t), GFP_KERNEL);
+    cdata->fb = ioremap(0x33F00000, 320*240*4);
+    filp->private_data = (void *)cdata;
+
 
     return 0;
 }
@@ -59,14 +73,15 @@ loff_t *off)
      }
 */
 
+/*
     unsigned long *fb;
-
     
     fb = ioremap(0x33f00000, 320*240*4); 
     for (i=0; i< 320*240; i++)
        writel(0xffff00, fb+i);
 
     printk(KERN_INFO "WRITE FB\n");
+*/
     return 0;
 }
 
@@ -85,18 +100,21 @@ static int cdata_ioctl(struct inode *inode, struct file *filp, unsigned int cmd,
     int n, size;
     unsigned long *fb;
 
+    struct cdata_t *cdata = (struct cdata *)filp->private_data;
+
     switch (cmd)
      {
         case IOCTL_CLEAR:
              
               size = *(int *)arg; //FIXME, cannot access the user space 
-              fb = ioremap(0x33f00000, size*4); 
-
+              //fb = ioremap(0x33f00000, size*4); 
+              fb = cdata->fb;
               printk(KERN_INFO "IOCTL-KERN");
 
+           
               for (n=0; n< size ; n++)
                  {
-                   writel(0xffffff, fb+n);
+                   writel(0xffffff, fb++);
                  }
         break;
      }
