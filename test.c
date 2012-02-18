@@ -9,7 +9,7 @@
 void main()
 {
     int fd;
-    int size = (320*120);
+    int size = (320*240);
 
     printf("Test code - IOCTL\n");
     fd = open("/dev/cdata", O_RDWR);
