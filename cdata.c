@@ -95,14 +95,6 @@ static struct file_operations cdata_fops = {
 
 static int cdata_init_module(void)
 {
-/*
-    unsigned long *fb;
-    
-    fb = ioremap(0x33f00000, 10000);
-    writel(0xffff00, fb);
-*/
-
-
     if (register_chrdev(121, "cdata", &cdata_fops) < 0) {
         printk(KERN_INFO "CDATA: can't register driver\n");
     return -1;
