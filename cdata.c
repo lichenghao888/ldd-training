@@ -20,9 +20,11 @@
 
 //unsigned long *fb;   //直接這樣寫也不對會有re-entrance, 所以要用filp->private_data
 //改成下面這個struct來實做
+
 struct cdata_t {
    unsigned long *fb;
-}
+};
+
 
 static int cdata_open(struct inode *inode, struct file *filp)
 {
@@ -35,6 +37,7 @@ static int cdata_open(struct inode *inode, struct file *filp)
     minor = MINOR(inode->i_rdev);
     major = MAJOR(inode->i_rdev);
     printk(KERN_INFO "CDATA Major no: %d & Minor no: %d\n", major, minor);
+
 
     cdata = kmalloc(sizeof(struct cdata_t), GFP_KERNEL);
     cdata->fb = ioremap(0x33F00000, 320*240*4);
@@ -82,6 +85,8 @@ loff_t *off)
 
     printk(KERN_INFO "WRITE FB\n");
 */
+
+
     return 0;
 }
 
@@ -97,9 +102,9 @@ static int cdata_flush(struct file *filp)
 
 static int cdata_ioctl(struct inode *inode, struct file *filp, unsigned int cmd, unsigned long arg)
 {
+
     int n, size;
     unsigned long *fb;
-
     struct cdata_t *cdata = (struct cdata_t *)filp->private_data;
 
     switch (cmd)
@@ -107,15 +112,16 @@ static int cdata_ioctl(struct inode *inode, struct file *filp, unsigned int cmd,
         case IOCTL_CLEAR:
              
               size = *((int *)arg); //FIXME, cannot access the user space 
+              printk(KERN_INFO "IOCTL-KERN\n");
 
                // Lock, 因為有可能Apps會有folk process同時使用這各資料結構, 所以需要lock 機制
               fb = cdata->fb;
                // unlock
 
-              printk(KERN_INFO "IOCTL-KERN");
+
               for (n=0; n< size ; n++)
                  {
-                   writel(0xffffff, fb++);
+                   writel(0x00ffffff, fb++);
                  }
         break;
      }
