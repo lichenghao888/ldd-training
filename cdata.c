@@ -78,12 +78,14 @@ static flush_lcd(void * priv)
      {
         writeb(linebuf[i],fb+offset);
         offset++;
-        if (offset >= LCD_SIZE)
-           offset =0;
+        if (offset >= LCD_SIZE*4)
+          {
+            printk(KERN_INFO "BANGO: %d\n", offset);
+            offset =0;
+          }
      }
 
-    //printk(KERN_INFO "flush fb: %L; index: %d; pix: %d\n", fb, index, *linebuf);
-
+    //printk(KERN_INFO "offset: %d\n", offset);
 
     cdata->index =0;
     cdata->offset = offset;
