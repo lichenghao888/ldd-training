@@ -17,12 +17,13 @@
 
 static int cdata_open(struct inode *inode, struct file *filp)
 {
-    int minor;
+    int minor, major;
 
     printk(KERN_INFO "CDATA: in open\n");
 
     minor = MINOR(inode->i_rdev);
-    printk(KERN_INFO "CDATA Minor no = : %d\n", minor);
+    major = MAJOR(inode->i_rdev);
+    printk(KERN_INFO "CDATA Major no: %d & Minor no: %d\n", major, minor);
 
     return 0;
 }
@@ -38,11 +39,32 @@ loff_t *off)
 {
     int i=0;
 
-    for (i=0; i<5000; i++)
+/*
+    for (i=0; i<500000; i++)
      {
          ;
          //schedule();
      }
+*/
+
+/*
+    printk(KERN_INFO "WRITE\n");
+    while (1)
+     {
+        printk(KERN_INFO "whiling\n");
+        //current->state = TASK_UNINTERRUPTIBLE;
+        schedule();
+     }
+*/
+
+    unsigned long *fb;
+
+    
+    fb = ioremap(0x33f00000, 320*240*4); 
+    for (i=0; i< 320*240; i++)
+       writel(0xffff00, fb+i);
+
+    printk(KERN_INFO "WRITE FB");
     return 0;
 }
 
@@ -73,10 +95,17 @@ static struct file_operations cdata_fops = {
 
 static int cdata_init_module(void)
 {
+    unsigned long *fb;
+    
+    fb = ioremap(0x33f00000, 10000);
+    writel(0xffff00, fb);
+
+
     if (register_chrdev(121, "cdata", &cdata_fops) < 0) {
         printk(KERN_INFO "CDATA: can't register driver\n");
     return -1;
      }
+
     return 0;
 }
 
