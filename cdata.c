@@ -15,6 +15,8 @@
 #include <asm/io.h>
 #include <asm/uaccess.h>
 
+#include "cdata_ioctl.h"
+
 static int cdata_open(struct inode *inode, struct file *filp)
 {
     int minor, major;
@@ -64,7 +66,7 @@ loff_t *off)
     for (i=0; i< 320*240; i++)
        writel(0xffff00, fb+i);
 
-    printk(KERN_INFO "WRITE FB");
+    printk(KERN_INFO "WRITE FB\n");
     return 0;
 }
 
@@ -80,6 +82,24 @@ static int cdata_flush(struct file *filp)
 
 static int cdata_ioctl(struct inode *inode, struct file *filp, unsigned int cmd, unsigned long arg)
 {
+    int n, size;
+    unsigned long *fb;
+
+    switch (cmd)
+     {
+        case IOCTL_CLEAR:
+             
+              size = *(int *)arg; //FIXME, cannot access the user space 
+              fb = ioremap(0x33f00000, size*4); 
+
+              printk(KERN_INFO "IOCTL-KERN");
+
+              for (n=0; n< size ; n++)
+                 {
+                   writel(0xffffff, fb+n);
+                 }
+        break;
+     }
 
 }
 

@@ -1,7 +1,7 @@
 #ifndef _CDATA_IOCTL_H_
 #define _CDATA_IOCTL_H_
 
-#define <linux/ioctl.h>
+#include <linux/ioctl.h>
 
 #define DEV_IOCTL_ID    0xCC
 
