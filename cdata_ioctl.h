@@ -13,4 +13,5 @@
 #define IOCTL_WHITE     _IO(DEV_IOCTL_ID, 5)
 #define IOCTL_BLACK     _IO(DEV_IOCTL_ID, 6)
 
+#define IOCTL_WRITE     _IOW(DEV_IOCTL_ID, 10, int)
 #endif

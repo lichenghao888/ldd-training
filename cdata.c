@@ -86,6 +86,13 @@ loff_t *off)
     printk(KERN_INFO "WRITE FB\n");
 */
 
+    char pix[4];
+
+    copy_from_user(pix, buf, 4);
+   for (i=0; i < 4; i++)
+    {
+        printk(KERN_INFO "pix[%d]=%d\n", i, pix[i]);
+    }
 
     return 0;
 }

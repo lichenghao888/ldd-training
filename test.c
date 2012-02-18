@@ -10,11 +10,14 @@ void main()
 {
     int fd;
     int size = (320*240);
+    char pix[4] = {0xFF, 0x00, 0x00, 0xFF};
 
     printf("Test code - IOCTL\n");
     fd = open("/dev/cdata", O_RDWR);
-    ioctl(fd, IOCTL_CLEAR, &size);
+    //ioctl(fd, IOCTL_CLEAR, &size);
     //write(fd, "123", 0);
+
+    write(fd, pix, 4);
 
     close(fd);
 }
