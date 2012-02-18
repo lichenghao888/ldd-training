@@ -17,12 +17,17 @@
 
 #include "cdata_ioctl.h"
 
+#define BUF_SIZE 128
+#define LCD_SIZE 320*240
 
 //unsigned long *fb;   //直接這樣寫也不對會有re-entrance, 所以要用filp->private_data
 //改成下面這個struct來實做
 
 struct cdata_t {
    unsigned long *fb;
+   unsigned char *buf;
+   unsigned int index;
+   unsigned int offset;
 };
 
 
@@ -38,8 +43,10 @@ static int cdata_open(struct inode *inode, struct file *filp)
     major = MAJOR(inode->i_rdev);
     printk(KERN_INFO "CDATA Major no: %d & Minor no: %d\n", major, minor);
 
-
     cdata = kmalloc(sizeof(struct cdata_t), GFP_KERNEL);
+    cdata->buf = kmalloc(BUF_SIZE, GFP_KERNEL);
+    cdata->index = 0;
+    cdata->offset = 0;
     cdata->fb = ioremap(0x33F00000, 320*240*4);
     filp->private_data = (void *)cdata;
 
@@ -50,6 +57,36 @@ static int cdata_open(struct inode *inode, struct file *filp)
 static ssize_t cdata_read(struct file *filp, const char *buf, size_t size,
 loff_t *off)
 {
+
+}
+
+
+static flush_lcd(void * priv)
+{
+    struct cdata_t *cdata = (struct cdata_t *)priv;
+    unsigned char *linebuf;
+    unsigned int index, i;
+    unsigned char *fb;
+    unsigned int offset;
+
+    linebuf = cdata->buf;
+    index = cdata->index;
+    fb = (unsigned char *)cdata->fb;
+    offset = cdata->offset;
+
+    for (i =0; i<index; i++)
+     {
+        writeb(linebuf[i],fb+offset);
+        offset++;
+        if (offset >= LCD_SIZE)
+           offset =0;
+     }
+
+    //printk(KERN_INFO "flush fb: %L; index: %d; pix: %d\n", fb, index, *linebuf);
+
+
+    cdata->index =0;
+    cdata->offset = offset;
 
 }
 
@@ -86,6 +123,7 @@ loff_t *off)
     printk(KERN_INFO "WRITE FB\n");
 */
 
+/*
     char pix[4];
 
     copy_from_user(pix, buf, 4);
@@ -93,12 +131,44 @@ loff_t *off)
     {
         printk(KERN_INFO "pix[%d]=%d\n", i, pix[i]);
     }
+*/
+
+    struct cdata_t *cdata = (struct cdata_t *)filp->private_data;
+    unsigned char *linebuf;
+    unsigned int index;
+
+    //lock
+    index = cdata->index;
+    linebuf = cdata->buf;
+    //unlock
+
+    for (i=0; i < size; i++)
+     {
+       if (index >= BUF_SIZE)
+        {
+           //Buffer is full
+           cdata->index = index;
+           flush_lcd((void *)cdata);
+           index = cdata->index;
+        }
+
+  	copy_from_user(&linebuf[index], &buf[i], 1);
+	//printk(KERN_INFO "index: %d ; pix: %d\n", index, linebuf[index]);
+       index ++;
+     }
+
+    cdata->index = index;
 
     return 0;
 }
 
 static int cdata_close(struct inode *inode, struct file *filp)
 {
+    struct cdata_t *cdata = (struct cdata_t *)filp->private_data;
+
+    flush_lcd((void *) cdata);
+    kfree(cdata->buf);
+    kfree(cdata);
     return 0;
 }
 
