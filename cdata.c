@@ -152,6 +152,8 @@ loff_t *off)
            cdata->index = index;
            flush_lcd((void *)cdata);
            index = cdata->index;
+             //開始要解決花費很多時間的問題. 直接用schedule(), 發現都沒有用
+           //schedule();
         }
 
   	copy_from_user(&linebuf[index], &buf[i], 1);
@@ -182,7 +184,8 @@ static int cdata_flush(struct file *filp)
 static int cdata_ioctl(struct inode *inode, struct file *filp, unsigned int cmd, unsigned long arg)
 {
 
-    int n, size;
+    int n;
+    unsigned long size;
     unsigned long *fb;
     struct cdata_t *cdata = (struct cdata_t *)filp->private_data;
 
@@ -190,8 +193,9 @@ static int cdata_ioctl(struct inode *inode, struct file *filp, unsigned int cmd,
      {
         case IOCTL_CLEAR:
              
-              size = *((int *)arg); //FIXME, cannot access the user space 
-              printk(KERN_INFO "IOCTL-KERN\n");
+              //size = *((int *)arg); //FIXME, cannot access the user space 
+              copy_from_user(&size, &arg, 1);
+              printk(KERN_INFO "IOCTL-KERN size: %d; arg: %d\n", size, arg);
 
                // Lock, 因為有可能Apps會有folk process同時使用這各資料結構, 所以需要lock 機制
               fb = cdata->fb;
@@ -200,7 +204,7 @@ static int cdata_ioctl(struct inode *inode, struct file *filp, unsigned int cmd,
 
               for (n=0; n< size ; n++)
                  {
-                   writel(0x00ffffff, fb++);
+                   writel(0x00ff00ff, fb++);
                  }
         break;
      }
