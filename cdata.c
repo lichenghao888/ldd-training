@@ -32,7 +32,7 @@ struct cdata_t {
    struct timer_list flush_timer;
    struct timer_list sched_timer;
 
-   //implement the wait queue for getting cpu control
+   //implement the wait queue for getting cpu control in interrupt case (line 3)
    wait_queue_head_t wq;
 
 };
