@@ -92,48 +92,18 @@ static flush_lcd(void * priv)
 
 }
 
+static void wake_up()
+{
+    //Wakeup function for deferred task, let process state becomes "ready" from TASK_INTERRUTIBLE state. If you prepare to do process scheduling, then the task will wait in the running queue
+
+
+}
+
+
 static ssize_t cdata_write(struct file *filp, const char *buf, size_t size,
 loff_t *off)
 {
     int i=0;
-
-/*
-    for (i=0; i<500000; i++)
-     {
-         ;
-         //schedule();
-     }
-*/
-
-/*
-    printk(KERN_INFO "WRITE\n");
-    while (1)
-     {
-        printk(KERN_INFO "whiling\n");
-        //current->state = TASK_UNINTERRUPTIBLE;
-        schedule();
-     }
-*/
-
-/*
-    unsigned long *fb;
-    
-    fb = ioremap(0x33f00000, 320*240*4); 
-    for (i=0; i< 320*240; i++)
-       writel(0xffff00, fb+i);
-
-    printk(KERN_INFO "WRITE FB\n");
-*/
-
-/*
-    char pix[4];
-
-    copy_from_user(pix, buf, 4);
-   for (i=0; i < 4; i++)
-    {
-        printk(KERN_INFO "pix[%d]=%d\n", i, pix[i]);
-    }
-*/
 
     struct cdata_t *cdata = (struct cdata_t *)filp->private_data;
     unsigned char *linebuf;
@@ -151,8 +121,8 @@ loff_t *off)
              //開始要解決花費很多時間的問題.
 
            cdata->index = index;
-           //FIXME: kernel scheduleing
-           flush_lcd((void *)cdata);
+           //FIXME: kernel scheduleing, deferred it
+           flush_lcd((void *)cdata);  //花費很多時間
            index = cdata->index;
 
            // FIXME: process scheduling
