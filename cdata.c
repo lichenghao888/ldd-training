@@ -137,12 +137,15 @@ loff_t *off)
 
 
            // FIXME: process scheduling, 做完process schedule後切回來的時候才需要讀回index
+repeat:
 	    current->state = TASK_INTERRUPTIBLE;
 	    schedule();
+             //如果this process取得排程器給的cpu控制權, 就會接下去跑
 
            index = cdata->index;
 
-
+           if (index != 0)
+                goto repeat;
 
         }
 
