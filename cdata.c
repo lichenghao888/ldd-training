@@ -207,6 +207,7 @@ static int cdata_close(struct inode *inode, struct file *filp)
     flush_lcd((void *) cdata);
 
     del_timer(&cdata->flush_timer);
+    del_timer(&cdata->sched_timer);
     kfree(cdata->buf);
     kfree(cdata);
     return 0;

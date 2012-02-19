@@ -3,24 +3,45 @@
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/mman.h>
+#include <stdlib.h>
+
 
 #include "cdata_ioctl.h"
 
-void main()
+//start to try the re-entrance code
+
+void main(void)
 {
     int fd, i;
-    int size = 320*240;
-    char pix[4] = {0x00, 0xFF, 0xFF, 0xFF};
+    pid_t pid;
 
-    printf("Test code - IOCTL\n");
+    int size = 320*240;
+    char pix[4] = {0x00, 0xFF, 0xFF, 0xFF};   //yellow color
+    char pix_c[4] = {0xFF, 0x00, 0xFF, 0x00};  //cyan color
+
+    printf("Test code - entrance\n");
+
+    pid = fork();
+
     fd = open("/dev/cdata", O_RDWR);
-    ioctl(fd, IOCTL_CLEAR, &size);
-    //write(fd, "123", 0);
-     
-    //for (i=0;i<size;i++) {
-    while(1) {
-         write(fd, pix, 4);
-      }
+
+
+    if (pid == 0)
+     {
+        sleep(1);
+	while(1) 
+	{
+		write(fd, pix, 4);
+	}
+     }
+    else
+     {
+        sleep(3);
+	while(1) 
+	{
+		write(fd, pix_c, 4);
+	}        
+     }
 
     close(fd);
 }
