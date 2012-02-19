@@ -148,12 +148,15 @@ loff_t *off)
      {
        if (index >= BUF_SIZE)
         {
-           //Buffer is full
+             //開始要解決花費很多時間的問題.
+
            cdata->index = index;
+           //FIXME: kernel scheduleing
            flush_lcd((void *)cdata);
            index = cdata->index;
-             //開始要解決花費很多時間的問題. 直接用schedule(), 發現都沒有用
-           //schedule();
+
+           // FIXME: process scheduling
+
         }
 
   	copy_from_user(&linebuf[index], &buf[i], 1);
