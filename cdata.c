@@ -28,6 +28,8 @@ struct cdata_t {
    unsigned char *buf;
    unsigned int index;
    unsigned int offset;
+
+   struct timer_list flush_timer;
 };
 
 
@@ -48,6 +50,8 @@ static int cdata_open(struct inode *inode, struct file *filp)
     cdata->index = 0;
     cdata->offset = 0;
     cdata->fb = ioremap(0x33F00000, 320*240*4);
+    init_timer(cdata->flush_timer);
+
     filp->private_data = (void *)cdata;
 
 
@@ -61,7 +65,8 @@ loff_t *off)
 }
 
 
-static flush_lcd(void * priv)
+//static flush_lcd(void * priv)
+static flush_lcd(unsigned long priv)
 {
     struct cdata_t *cdata = (struct cdata_t *)priv;
     unsigned char *linebuf;
@@ -92,7 +97,7 @@ static flush_lcd(void * priv)
 
 }
 
-static void wake_up()
+static void cdata_wake_up()
 {
     //Wakeup function for deferred task, let process state becomes "ready" from TASK_INTERRUTIBLE state. If you prepare to do process scheduling, then the task will wait in the running queue
 
@@ -108,10 +113,12 @@ loff_t *off)
     struct cdata_t *cdata = (struct cdata_t *)filp->private_data;
     unsigned char *linebuf;
     unsigned int index;
+    struct timer_list *timer;
 
     //lock
     index = cdata->index;
     linebuf = cdata->buf;
+    timer = cdata->flush_timer;
     //unlock
 
     for (i=0; i < size; i++)
@@ -121,11 +128,20 @@ loff_t *off)
              //開始要解決花費很多時間的問題.
 
            cdata->index = index;
-           //FIXME: kernel scheduleing, deferred it
-           flush_lcd((void *)cdata);  //花費很多時間
+           //FIXME: kernel scheduleing, deferred it, using Kernel timer
+           //flush_lcd((void *)cdata);  //花費很多時間
+           timer->expires = jiffies + 1*HZ;
+           timer->data = (unsigned long)cdata;
+           timer->function = flush_lcd;
+
+
+           // FIXME: process scheduling, 做完process schedule後切回來的時候才需要讀回index
+	    current->state = TASK_INTERRUTIBLE;
+	    schedule();
+
            index = cdata->index;
 
-           // FIXME: process scheduling
+
 
         }
 
