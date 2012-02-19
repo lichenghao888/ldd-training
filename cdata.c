@@ -173,7 +173,7 @@ loff_t *off)
            wait.task = current;
            add_wait_queue(wq, &wait);
 
-           // FIXME: process scheduling, 做完process schedule後切回來的時候才需要讀回index
+           //process scheduling, 做完process schedule後切回來的時候才需要讀回index
 repeat:
 	    current->state = TASK_INTERRUPTIBLE;  //可以用set_current_state(...);
 	    schedule();

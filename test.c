@@ -36,7 +36,7 @@ void main(void)
      }
     else
      {
-        sleep(3);
+        sleep(10);
 	while(1) 
 	{
 		write(fd, pix_c, 4);
