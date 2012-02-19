@@ -30,6 +30,11 @@ struct cdata_t {
    unsigned int offset;
 
    struct timer_list flush_timer;
+   struct timer_list sched_timer;
+
+   //implement the wait queue for getting cpu control
+   wait_queue_head_t wq;
+
 };
 
 
@@ -51,6 +56,9 @@ static int cdata_open(struct inode *inode, struct file *filp)
     cdata->offset = 0;
     cdata->fb = ioremap(0x33F00000, 320*240*4);
     init_timer(&cdata->flush_timer);
+    init_timer(&cdata->sched_timer);
+
+    init_waitqueue_head(&cdata->wq);
 
     filp->private_data = (void *)cdata;
 
@@ -101,7 +109,20 @@ static void cdata_wake_up(unsigned long priv)
 {
     //Wakeup function for deferred task, let process state becomes "ready" from TASK_INTERRUTIBLE state. If you prepare to do process scheduling, then the task will wait in the running queue
 
+    struct cdata_t *cdata = (struct cdata_t *)priv;
+    struct timer_list *sched;
+    wait_queue_head_t *wq;
 
+    //lock
+    sched = &cdata->sched_timer;
+    wq = &cdata->wq;
+    //unlock
+
+    wake_up(wq);   //通知排程器, 改變process state
+
+    //再去更新下一次的timer
+    sched->expires = jiffies + 10;
+    add_timer(sched);
 }
 
 
@@ -114,11 +135,17 @@ loff_t *off)
     unsigned char *linebuf;
     unsigned int index;
     struct timer_list *timer;
+    struct timer_list *sched;
+
+    wait_queue_head_t *wq;
+    wait_queue_t wait;
 
     //lock
     index = cdata->index;
     linebuf = cdata->buf;
     timer = &cdata->flush_timer;
+    sched = &cdata->sched_timer;
+    wq = &cdata->wq;
     //unlock
 
     for (i=0; i < size; i++)
@@ -128,25 +155,39 @@ loff_t *off)
              //開始要解決花費很多時間的問題.
 
            cdata->index = index;
-           //FIXME: kernel scheduleing, deferred it, using Kernel timer
+           //kernel scheduleing, deferred it, using Kernel timer
            //flush_lcd((void *)cdata);  //花費很多時間
            timer->expires = jiffies + 1*HZ;  //HZ: CPU跑一秒的意思
            timer->data = (unsigned long)cdata;
            timer->function = flush_lcd;
            add_timer(timer);  //加入kernel. 開始計數
 
+           //add sched timer for changing process state
+           sched->expires = jiffies + 10;  // 0.1 sec, change the process state
+           sched->data = (unsigned long)cdata;
+           sched->function = cdata_wake_up;
+           add_timer(sched);  //加入kernel. 開始計數
+
+             //由於sched timer的目的在於改變process state (需要利用wait queue通知排程器)
+           wait.flags =0;
+           wait.task = current;
+           add_wait_queue(wq, &wait);
 
            // FIXME: process scheduling, 做完process schedule後切回來的時候才需要讀回index
 repeat:
-	    current->state = TASK_INTERRUPTIBLE;
+	    current->state = TASK_INTERRUPTIBLE;  //可以用set_current_state(...);
 	    schedule();
-             //如果this process取得排程器給的cpu控制權, 就會接下去跑
+             //如果this process取得排程器給的cpu控制權, 就會接下去跑, 這部份要靠另外一各timer + wait queue來作
 
            index = cdata->index;
 
            if (index != 0)
                 goto repeat;
 
+             //用完wait queue之後要刪除
+           remove_wait_queue(wq, &wait);
+             //做完process schedule - sched timer, 之後就要刪除
+           del_timer(sched);
         }
 
   	copy_from_user(&linebuf[index], &buf[i], 1);
