@@ -12,36 +12,22 @@
 
 void main(void)
 {
-    int fd, i;
-    pid_t pid;
+	int fd, i, number = 10000;
+	pid_t pid;
 
-    int size = 320*240;
-    char pix[4] = {0x00, 0xFF, 0xFF, 0xFF};   //yellow color
-    char pix_c[4] = {0xFF, 0x00, 0xFF, 0x00};  //cyan color
+	int size = 320*240;
+	char pix[4] = {0x00, 0xFF, 0xFF, 0xFF};   //yellow color
+	char pix_c[4] = {0xFF, 0x00, 0xFF, 0x00};  //cyan color
 
-    printf("Test code - entrance\n");
+	printf("mmap\n");
 
-    pid = fork();
+	fd = open("/dev/cdata", O_RDWR);
+	ioctl(fd, IOCTL_CLEAR, &number);
 
-    fd = open("/dev/cdata", O_RDWR);
+	mmap(0, 1024, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
+	sleep(15);
 
+	//write(fd, pix_c, 4);
 
-    if (pid == 0)
-     {
-        sleep(1);
-	while(1) 
-	{
-		write(fd, pix, 4);
-	}
-     }
-    else
-     {
-        sleep(10);
-	while(1) 
-	{
-		write(fd, pix_c, 4);
-	}        
-     }
-
-    close(fd);
+	close(fd);
 }

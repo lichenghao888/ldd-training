@@ -5,7 +5,7 @@
 
 #define DEV_IOCTL_ID    0xCC
 
-#define IOCTL_CLEAR     _IOW(DEV_IOCTL_ID, 1, int)
+#define IOCTL_CLEAR     _IOWR(DEV_IOCTL_ID, 1, int)
 
 #define IOCTL_RED       _IO(DEV_IOCTL_ID, 2)
 #define IOCTL_GREEN     _IO(DEV_IOCTL_ID, 3)
