@@ -45,7 +45,7 @@ static int cdata_open(struct inode *inode, struct file *filp)
 
     major = MAJOR(inode->i_rdev);
     minor = MINOR(inode->i_rdev);
-    printk(KERN_INFO "Cdata open: Number: %d-%d\n", major, minor);
+    printk(KERN_INFO "Cdata open: Number -1: %d-%d\n", major, minor);
     
         
     cdata = (struct cdata_t *)kmalloc(sizeof(struct cdata_t), GFP_KERNEL);
@@ -54,6 +54,8 @@ static int cdata_open(struct inode *inode, struct file *filp)
     cdata->buf = kmalloc(BUF_SIZE, GFP_KERNEL);
     cdata->buf_offset = 0;
     cdata->fb_offset = 0;
+
+		printk(KERN_INFO "ioremap address: %08x\n", cdata->fb);
     
     init_timer(&cdata->flush_timer);
     init_timer(&cdata->sched_timer);
@@ -263,19 +265,22 @@ int cdata_mmap(struct file *filp, struct vm_area_struct *vma)
 
     /* 這個範例是一次配一大塊記憶體, 除非確定你會拿到完整連續的記憶體才能這樣寫 */
     //
+
 	from = vma->vm_start;
 	to  = 0x33f00000;
 	size = vma->vm_end - vma->vm_start;
-	remap_page_range(from, to, size, PAGE_SHARED);
+	//remap_page_range(from, to, size, PAGE_SHARED);
+
     //
 
 	/*
      * 正確寫法 
    * PAGE_SHARED 使用時機為user space & kernel space會公用這塊資料
+   *  remap_page_range()適用在reserved memory , 用它來建立page table
     */	
 	while(size)
 	{
-		remap_page_ranage(from, to, PAGE_SIZE, PAGE_SHARED);
+		remap_page_range(from, to, PAGE_SIZE, PAGE_SHARED);
 		from += PAGE_SIZE;
 		to += PAGE_SIZE;
 		size -=PAGE_SIZE;
