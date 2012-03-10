@@ -271,6 +271,7 @@ int cdata_mmap(struct file *filp, struct vm_area_struct *vma)
 
 	/*
      * 正確寫法 
+   * PAGE_SHARED 使用時機為user space & kernel space會公用這塊資料
     */	
 	while(size)
 	{
