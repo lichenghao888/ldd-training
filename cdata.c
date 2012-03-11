@@ -55,7 +55,7 @@ static int cdata_open(struct inode *inode, struct file *filp)
     cdata->buf_offset = 0;
     cdata->fb_offset = 0;
 
-		printk(KERN_INFO "ioremap address: %08x\n", cdata->fb);
+    printk(KERN_INFO "ioremap address: %08x\n", cdata->fb);
     
     init_timer(&cdata->flush_timer);
     init_timer(&cdata->sched_timer);
