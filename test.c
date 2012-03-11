@@ -21,10 +21,13 @@ void main(void)
 	unsigned char pix[4] = {0x00, 0xFF, 0xFF, 0xFF};   //yellow color
 	char pix_c[4] = {0xFF, 0x00, 0xFF, 0x00};  //cyan color
 
+/*	
 	printf("mmap\n");
 
 	fd = open("/dev/cdata", O_RDWR);
-	//ioctl(fd, IOCTL_CLEAR, &number);
+
+
+  //ioctl(fd, IOCTL_CLEAR, &number);
 	//mmap(0, 1024, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
 
 	fp = (unsigned char *)mmap(0, size*4, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
@@ -40,7 +43,12 @@ void main(void)
 	printf("finish the painting\n");
 	sleep(45);
 
+*/
+
 	//write(fd, pix_c, 4);
+
+    fd = open("/dev/misc/cdata-ts", O_RDWR);
+    open("/dev/input/event0", O_RDWR);
 
 	close(fd);
 }
